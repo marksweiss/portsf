@@ -3,7 +3,8 @@ POBJS = ieee80.o portsf.o
 
 # CFLAGS = -I ../include -D_DEBUG -g
 # on strange 64 bit platforms must define CPLONG64
-CFLAGS = -Dunix -O2 -I ../include
+# CFLAGS = -Dunix -O2 -I ../include
+CFLAGS = -I ../include
 
 CC=gcc
 
@@ -11,7 +12,6 @@ CC=gcc
 
 .PHONY:	clean veryclean
 all:	libportsf.a
-
 
 clean:
 	-rm -f $(POBJS)
