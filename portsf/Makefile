@@ -1,32 +1,41 @@
-#makefile for portsf
-POBJS = ieee80.o portsf.o
+# NOTE: Target can't have same name as output or make thinks the target is up to
+# date because it sees the artifact of that name and it hasn't changed.
+all:
+	clang -o example portsf.o ieee80.o example.c -I ../include
 
-# CFLAGS = -I ../include -D_DEBUG -g
-# on strange 64 bit platforms must define CPLONG64
-# CFLAGS = -Dunix -O2 -I ../include
-CFLAGS = -I ../include
+##makefile for portsf
+#POBJS = ieee80.o portsf.o
 
-CC=gcc
+## CFLAGS = -I ../include -D_DEBUG -g
+## on strange 64 bit platforms must define CPLONG64
+## CFLAGS = -Dunix -O2 -I ../include
+#CFLAGS = -I ../include
 
-.c.o:	$(CC) -c $(CFLAGS) $< -o $@ 
+#CC=clang
 
-.PHONY:	clean veryclean
-all:	libportsf.a
+#.c.o:	$(CC) -c $(CFLAGS) $< -o $@ 
 
-clean:
-	-rm -f $(POBJS)
+#.PHONY:	clean veryclean
+#all:	libportsf.a
 
-veryclean:
-	-rm -f $(POBJS) 
-	rm -f libportsf.a; 
+#clean:
+#	-rm -f $(POBJS)
 
-libportsf.a:	$(POBJS)
-	ar -rc libportsf.a $(POBJS)
-	ranlib  libportsf.a
+#veryclean:
+#	-rm -f $(POBJS) 
+#	rm -f libportsf.a; 
 
-install:	libportsf.a
-	cp libportsf.a ../lib
-#
-#	dependencies
-#
-portsf.c:	../include/portsf.h ieee80.h
+#libportsf.a:	$(POBJS)
+#	ar -rc libportsf.a $(POBJS)
+#	ranlib  libportsf.a
+
+#install:	libportsf.a
+#	cp libportsf.a ../lib
+##
+##	dependencies
+##
+#portsf.c:	../include/portsf.h ieee80.h
+
+
+#example: portsf.o example.c 
+#	$(CC) -o example example.c $(CFLAGS)
