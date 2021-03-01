@@ -15,9 +15,6 @@ int reportPeak(int wrHandle, ...) {
 
     printf("Allocating peaks struct\n");
     PSF_CHPEAK* peaks = (PSF_CHPEAK*)malloc(numChans * sizeof(PSF_CHPEAK));
-
-    printf("DEBUG %ld\n", sizeof(PSF_CHPEAK));
-
     if (checkAlloc((void**)&peaks, "Allocation of PSF_CHPEAK failed") == ERROR) {
         return ERROR;
     }
@@ -25,12 +22,13 @@ int reportPeak(int wrHandle, ...) {
     if (psf_sndReadPeaks(wrHandle, peaks, NULL) > 0) {
         long i;
         double peaktime;
-        printf("PEAK information:\n");
+        printf("\n*****************\nPEAK information:\n");
         for(i = 0; i < numChans; i++) {
             peaktime = (double) peaks[i].pos / (double)samplingRate;
             printf("CH %ld:\t%.4f at %.4f secs\n",
                    i + 1, peaks[i].val, peaktime);
         }
+        printf("*****************\n\n");
     }
     
     va_end(varg);
