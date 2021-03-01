@@ -14,12 +14,9 @@ extern "C" {
 extern int ERROR;
 extern int SUCCESS;
 
-extern int NUM_ARGS;
-
 extern const int FREE_STACK_CAPACITY;
-// Hack to parameterize g_freeStack. Can't use FREE_STACK_CAPACITY because not declared here.
-// NOTE: Have to keep in sync with process_lib.c
 extern int g_freeStackLength;
+// NOTE: Have to keep in sync with process_lib.c because FREE_STACK_CAPACITY not declared here
 extern void* g_freeStack[20];
 
 extern psf_format FORMAT;
@@ -30,7 +27,8 @@ extern psf_stype SAMPLE_TYPE;
 extern psf_channelformat CHANNEL_FORMAT;
 
 extern int CLIP_FLOATS;
-// NOTE: Set to 1 for platforms/applications that can't rdHandle custom header fields
+// NOTE: Set to 1 for platforms/applications that can't handle custom header fields, which are
+// placed in the 0th header
 extern int MIN_HEADER;
 extern int MODE;
 
@@ -49,7 +47,15 @@ void finish();
 void addToFreeStack(void** ptr);
 void removeFromFreeStack(void** ptr);
 // Helper to allocate frame buffer
-int allocFrameBuf(int numChans, float** frameBuf);
+int allocFrameBuf(int numChans, float** frameBuf, int numFrames);
+
+
+// Main Processing Loop
+// Each app uses this library and defines a processFrameBuf callback for procssing an input file
+//  of audio into an output file of audio.
+// processFrameBuf contract: takes a frame buffer by reference and modifies the frame buffer,
+//  returns 0 if SUCESS or some other error code if ERROR
+int processFrames(const char* inFile, const char* outFile, int (*processFrameBuf)(float**));
 
 #ifdef __cplusplus
 }
