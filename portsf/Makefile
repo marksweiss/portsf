@@ -6,8 +6,11 @@
 # Macros for clean, clean all
 # Macro to be parameterized for name of compiled target and target.c
 
-all:
-	clang -o example portsf.o ieee80.o process_lib.o example.c -I ../include
+processing:
+	clang -c processing_lib.c -o processing_lib.o
+
+all: processing_lib.o example.c
+	clang -o example portsf.o ieee80.o processing_lib.o example.c -I ../include
 
 ##makefile for portsf
 #POBJS = ieee80.o portsf.o
