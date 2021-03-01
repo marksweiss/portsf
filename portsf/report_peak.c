@@ -1,18 +1,23 @@
 #include <stdarg.h>
+#include <stdlib.h>
 #include "../include/processing_lib.h"
 
 // Arg processing is done per app because each app may need different arguments
-int NUM_ARGS = 3;
-enum ARGS {PROGNAME, INFILE, OUTFILE};
+int NUM_ARGS = 5;
+enum ARGS {PROGNAME, ARG_INFILE, ARG_OUTFILE, ARG_NUM_CHANNELS, ARG_SAMPLING_RATE};
 
+int NUM_VAR_ARGS = 2;
 int reportPeak(int wrHandle, ...) {
     va_list varg;
     va_start(varg, wrHandle);
     int numChans = va_arg(varg, int);
     int samplingRate = va_arg(varg, int);
 
-    printf("Allocating peaks struct");
+    printf("Allocating peaks struct\n");
     PSF_CHPEAK* peaks = (PSF_CHPEAK*)malloc(numChans * sizeof(PSF_CHPEAK));
+
+    printf("DEBUG %ld\n", sizeof(PSF_CHPEAK));
+
     if (checkAlloc((void**)&peaks, "Allocation of PSF_CHPEAK failed") == ERROR) {
         return ERROR;
     }
@@ -32,27 +37,29 @@ int reportPeak(int wrHandle, ...) {
     return SUCCESS;
 }
 
-int parseArgs(int argc, char* argv[], char** infile, char** outfile) {
+int parseArgs(int argc, char* argv[], char** infile, char** outfile,
+        int* numChannels, int* samplingRate) {
     if (argc != NUM_ARGS) {
         printf("Incorrect number of args %d. %d required\n", argc, NUM_ARGS);
         printf("usage: `process_audio infile outfile`\n");
         return ERROR;
     }
-    *infile = argv[INFILE];
-    *outfile = argv[OUTFILE];
+    *infile = argv[ARG_INFILE];
+    *outfile = argv[ARG_OUTFILE];
+    *numChannels = atoi(argv[ARG_NUM_CHANNELS]);
+    *samplingRate = atoi(argv[ARG_SAMPLING_RATE]);
     return SUCCESS;
 }
 
 int main(int argc, char* argv[]) {
-    // CUSTOM ARG PARSING PER APP
     char* inFile;
     char* outFile;
-    int ret = parseArgs(argc, argv, &inFile, &outFile); 
+    int numChannels;
+    int samplingRate;
+    int ret = parseArgs(argc, argv, &inFile, &outFile, &numChannels, &samplingRate); 
     if (ret == ERROR) {
         exit(ERROR);
     }
     
-    int numVarArgs = 1;
-    int numChannels = 2;
-    postProcessOutputFile(inFile, outFile, reportPeak, numVarArgs, numChannels);
+    postProcessOutputFile(inFile, outFile, reportPeak, NUM_VAR_ARGS, numChannels, samplingRate);
 }

@@ -256,8 +256,8 @@ int postProcessOutputFile(const char* inFile, const char* outFile,
     if (numVarArgs == 1) {
         va_list varg;
         va_start(varg, numVarArgs);
-        va_arg(varg, int);
-        postProcessOutFile(wrHandle, varg);
+        int arg = va_arg(varg, int);
+        postProcessOutFile(wrHandle, arg);
         va_end(varg);
     } else if (numVarArgs == 2) {
         int arg1;
