@@ -46,6 +46,7 @@ void finish();
 // API for registering allocated pointers so they are freed on failure
 void addToFreeStack(void** ptr);
 void removeFromFreeStack(void** ptr);
+int checkAlloc(void** ptr, const char* msg);
 // Helper to allocate frame buffer
 int allocFrameBuf(int numChans, float** frameBuf, int numFrames);
 
@@ -56,6 +57,9 @@ int allocFrameBuf(int numChans, float** frameBuf, int numFrames);
 // processFrameBuf contract: takes a frame buffer by reference and modifies the frame buffer,
 //  returns 0 if SUCESS or some other error code if ERROR
 int processFrames(const char* inFile, const char* outFile, int (*processFrameBuf)(float**));
+
+int postProcessOutputFile(const char* inFile, const char* outFile,
+    int (*postProcessOutFile)(int, ...), int numVarArgs, ...);
 
 #ifdef __cplusplus
 }
