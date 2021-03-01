@@ -12,6 +12,9 @@ processing:
 all: processing_lib.o example.c
 	clang -o example portsf.o ieee80.o processing_lib.o example.c -I ../include
 
+report-peak: processing_lib.o report_peak.c
+	clang -o report_peak portsf.o ieee80.o processing_lib.o report_peak.c -I ../include
+
 ##makefile for portsf
 #POBJS = ieee80.o portsf.o
 
