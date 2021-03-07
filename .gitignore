@@ -3,4 +3,6 @@
 ./lib/*
 lib
 *.a
-
+src/*.dSYM/
+src/gain
+src/report_peak

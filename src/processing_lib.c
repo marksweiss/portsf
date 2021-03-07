@@ -1,10 +1,7 @@
-#include <stdarg.h>
 #include "../include/processing_lib.h"
 
 int ERROR = 1;
 int SUCCESS = 0;
-
-enum ARGS {PROGNAME, INFILE, OUTFILE};
 
 const int FREE_STACK_CAPACITY = 20;
 int g_freeStackLength = 0;
@@ -112,7 +109,8 @@ static int openOutputFile(const PSF_PROPS rdProps, const char* outFile, PSF_PROP
     return SUCCESS;
 }
 
-int processFrames(const char* inFile, const char* outFile, int (*processFrameBuf)(float**)) {
+int processFrames(const char* inFile, const char* outFile,
+        int (*processFrameBuf)(float**, void* customArgs), void* customArgs) {
     init();
 
     printf("Open sound file for reading\n");
@@ -147,8 +145,8 @@ int processFrames(const char* inFile, const char* outFile, int (*processFrameBuf
     totalRead = 0;
     framesRead = psf_sndReadFloatFrames(rdHandle, frameBuf, 1);
     while (framesRead == 1) {
-        // Process the last frame read
-        if ((processFrameBuf(&frameBuf)) != SUCCESS) {
+        // Process the current frame 
+       if ((processFrameBuf(&frameBuf, customArgs)) != SUCCESS) {
             goto exit_error;
         }
 
@@ -162,7 +160,7 @@ int processFrames(const char* inFile, const char* outFile, int (*processFrameBuf
         framesRead = psf_sndReadFloatFrames(rdHandle, frameBuf, 1);
         totalRead++;
     }
-    // Check last read (that exited the processing loop) for failure
+    // Check that exit of processing loop was successful
     if (framesRead < 0) {
         printf("Error reading infile. Outfile is incomplete.\n");
         goto exit_error;
@@ -194,7 +192,7 @@ int processFrames(const char* inFile, const char* outFile, int (*processFrameBuf
 }
 
 int postProcessOutputFile(const char* inFile, const char* outFile,
-        int (*postProcessOutFile)(int, ...), int numVarArgs, ...) {
+        int (*postProcessOutFile)(int, void* customArgs), void* customArgs) {
     init();
 
     printf("Open sound file for reading\n");
@@ -251,26 +249,7 @@ int postProcessOutputFile(const char* inFile, const char* outFile,
     logReturnCode(ret, "psf_sndClose()"); 
 
     // Call post-processing callback before closing the file for writing
-    // TODO Support argument counts > 1
-    // TODO Support vararg types other than int
-    if (numVarArgs == 1) {
-        va_list varg;
-        va_start(varg, numVarArgs);
-        int arg = va_arg(varg, int);
-        postProcessOutFile(wrHandle, arg);
-        va_end(varg);
-    } else if (numVarArgs == 2) {
-        int arg1;
-        int arg2;
-        va_list varg;
-        va_start(varg, numVarArgs);
-        arg1 = va_arg(varg, int);
-        arg2 = va_arg(varg, int);
-        postProcessOutFile(wrHandle, arg1, arg2);
-        va_end(varg);
-    } else {
-        postProcessOutFile(wrHandle);
-    }
+    postProcessOutFile(wrHandle, customArgs);
 
     printf("Close sound file for writing\n");
     ret = psf_sndClose(wrHandle);

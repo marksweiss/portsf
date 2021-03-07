@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include <stdlib.h>
 #include "../include/processing_lib.h"
 
@@ -6,15 +5,16 @@
 int NUM_ARGS = 5;
 enum ARGS {PROGNAME, ARG_INFILE, ARG_OUTFILE, ARG_NUM_CHANNELS, ARG_SAMPLING_RATE};
 
-int NUM_VAR_ARGS = 2;
-int reportPeak(int wrHandle, ...) {
-    va_list varg;
-    va_start(varg, wrHandle);
-    int numChans = va_arg(varg, int);
-    int samplingRate = va_arg(varg, int);
+typedef struct _CustomArgs {
+    int numChannels;
+    double samplingRate;
+} CustomArgs;
+
+int reportPeak(int wrHandle, void* customArgs) {
+    CustomArgs* args = (CustomArgs*)customArgs;
 
     printf("Allocating peaks struct\n");
-    PSF_CHPEAK* peaks = (PSF_CHPEAK*)malloc(numChans * sizeof(PSF_CHPEAK));
+    PSF_CHPEAK* peaks = (PSF_CHPEAK*)malloc(args->numChannels * sizeof(PSF_CHPEAK));
     if (checkAlloc((void**)&peaks, "Allocation of PSF_CHPEAK failed") == ERROR) {
         return ERROR;
     }
@@ -23,15 +23,14 @@ int reportPeak(int wrHandle, ...) {
         long i;
         double peaktime;
         printf("\n*****************\nPEAK information:\n");
-        for(i = 0; i < numChans; i++) {
-            peaktime = (double) peaks[i].pos / (double)samplingRate;
+        for(i = 0; i < args->numChannels; i++) {
+            peaktime = (double) peaks[i].pos / args->samplingRate;
             printf("CH %ld:\t%.4f at %.4f secs\n",
                    i + 1, peaks[i].val, peaktime);
         }
         printf("*****************\n\n");
     }
     
-    va_end(varg);
     return SUCCESS;
 }
 
@@ -39,7 +38,7 @@ int parseArgs(int argc, char* argv[], char** infile, char** outfile,
         int* numChannels, int* samplingRate) {
     if (argc != NUM_ARGS) {
         printf("Incorrect number of args %d. %d required\n", argc, NUM_ARGS);
-        printf("usage: `process_audio infile outfile`\n");
+        printf("usage: `process_audio infile outfile numChannels samplingRate`\n");
         return ERROR;
     }
     *infile = argv[ARG_INFILE];
@@ -58,6 +57,16 @@ int main(int argc, char* argv[]) {
     if (ret == ERROR) {
         exit(ERROR);
     }
-    
-    postProcessOutputFile(inFile, outFile, reportPeak, NUM_VAR_ARGS, numChannels, samplingRate);
+
+    CustomArgs* customArgs = malloc(sizeof(CustomArgs));
+    if (checkAlloc((void**)&customArgs, "Allocation of customArgs failed") == ERROR) {
+        return ERROR;
+    }
+    customArgs->numChannels = numChannels;
+    customArgs->samplingRate = samplingRate;
+
+    postProcessOutputFile(inFile, outFile, reportPeak, customArgs);
+
+    free(customArgs);
+    return SUCCESS;
 }

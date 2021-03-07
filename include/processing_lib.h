@@ -14,6 +14,9 @@ extern "C" {
 extern int ERROR;
 extern int SUCCESS;
 
+extern const char* INT;
+extern const char* FLOAT;
+
 extern const int FREE_STACK_CAPACITY;
 extern int g_freeStackLength;
 // NOTE: Have to keep in sync with process_lib.c because FREE_STACK_CAPACITY not declared here
@@ -56,10 +59,11 @@ int allocFrameBuf(int numChans, float** frameBuf, int numFrames);
 //  of audio into an output file of audio.
 // processFrameBuf contract: takes a frame buffer by reference and modifies the frame buffer,
 //  returns 0 if SUCESS or some other error code if ERROR
-int processFrames(const char* inFile, const char* outFile, int (*processFrameBuf)(float**));
+int processFrames(const char* inFile, const char* outFile,
+    int (*processFrameBuf)(float**, void* customArgs), void* customArgs);
 
 int postProcessOutputFile(const char* inFile, const char* outFile,
-    int (*postProcessOutFile)(int, ...), int numVarArgs, ...);
+    int (*postProcessOutFile)(int, void* customArgs), void* customArgs);
 
 #ifdef __cplusplus
 }
